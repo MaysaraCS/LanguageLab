@@ -42,10 +42,6 @@ class CourseController extends Controller
     
    }
 
-   public function displayCourse(Course $course){
-    return view('teacherCourse', compact('course'));
-   }
-
    public function displayParticipants(Course $course){
     $participants = $course->enrollments()->with('student')->get();
     return view('courseParticipants', compact('participants', 'course'));

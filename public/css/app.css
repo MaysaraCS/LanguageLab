@@ -250,9 +250,11 @@ table > tbody > tr > td {
     margin-bottom: 10px; /* Add spacing between paragraphs */
 }
 
-list-links {
+a {
     text-decoration: none;
     color: #000000;
-    display: block;
-    text-align: center; 
+}
+
+li {
+    display: flex;
 }

@@ -9,6 +9,15 @@
 </div>
 
 <div class="container" style="margin-left: 250px; padding: 20px;">
+    <div class="navbar">
+        <ul>
+            <li><a class="list-links" href="{{ route('courses.display', ['course' => $course]) }}">Announcments</a></li>
+            <li><a class="list-links" href="{{ route('teacher.content', ['course' => $course]) }}">Content</a></li>
+            <li><a class="list-links" href="">Assessments</a></li>
+            <li><a class="list-links" href="{{ route('course.participants', ['course' => $course]) }}">Participants</a></li>
+        </ul>
+    </div>
+
     <div id="participants">
     <h2>Course Participants for {{ $course->course_name }}</h2>
 

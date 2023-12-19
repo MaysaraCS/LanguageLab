@@ -38,4 +38,9 @@ class Course extends Model
         return $this->hasMany(Assessment::class, 'course_id', 'id');
     }
 
+    public function announcements()
+    {
+        return $this->hasMany(Announcement::class, 'course_id', 'id');
+    }
+
 }

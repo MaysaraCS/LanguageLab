@@ -15,7 +15,7 @@
         @if(count($courses) > 0)
         <ul>
         @foreach($courses as $course)
-            <li>{{ $course->course_name }}</li>
+            <li><a class="link-lists" href="{{ route('student.courses.display', ['course' => $course]) }}">{{ $course->course_name }}</a></li>
         @endforeach
         </ul>
         @else

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\http\Controllers\AuthManager;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ContentController;
 use Illuminate\Auth\Events\Login;
 
 /*
@@ -53,11 +55,22 @@ Route::post('/teacherCourses', [ CourseController::class, 'teacherCoursesPost'])
 
 Route::post('/teacherCourses/createCourses', [ CourseController::class, 'createCourses'])->name('courses.create')->middleware('auth:teacher');
 
-Route::get('/teacherCourses/{course}', [ CourseController::class, 'displayCourse'])->name('courses.display')->middleware('auth:teacher');
+Route::get('/teacherCourses/{course}', [ AnnouncementController::class, 'displayAnnouncements'])->name('courses.display')->middleware('auth:teacher');
 
 Route::get('/teacherCourses/{course}/participants', [ CourseController::class, 'displayParticipants'])->name('course.participants')->middleware('auth:teacher');
 
 Route::post('/teacherCourses/{course}/participants', [ CourseController::class, 'addParticipant'])->name('course.add.participants')->middleware('auth:teacher');
 
-Route::get('/studentCourses', [ courseController::class, 'displayStudentCourses'])->name('student.courses')->middleware('auth:teacher');
+Route::get('/studentCourses', [ CourseController::class, 'displayStudentCourses'])->name('student.courses')->middleware('auth:teacher');
 
+Route::post('/teacherCourses/{course}', [ AnnouncementController::class, 'createAnnouncement'])->name('course.add.announcements')->middleware('auth:teacher');
+
+Route::get('/studentCourses/{course}', [ AnnouncementController::class, 'displayStudentAnnouncements'])->name('student.courses.display')->middleware('auth:student');
+
+Route::get('/teacherCourses/{course}/content', [ ContentController::class, 'display'])->name('teacher.content')->middleware('auth:teacher');
+
+Route::post('/teacherCourses/{course}/content', [ ContentController::class, 'add'])->name('add.teacher.content')->middleware('auth:teacher');
+
+Route::get('/download{file}', [ ContentController::class, 'download'])->name('content.download');
+
+Route::get('/studentCourses/{course}/content', [ ContentController::class, 'studentDisplay'])->name('student.content.display')->middleware('auth:student');
