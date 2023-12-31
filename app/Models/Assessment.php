@@ -34,4 +34,6 @@ class Assessment extends Model
     {
         return $this->hasMany(Submission::class, 'assessment_id', 'id');
     }
+
+    
 }

@@ -34,7 +34,10 @@ class CourseController extends Controller
     $newCourse = Course::create([
         'course_name' => $request->input('name'),
         'teacher_id' => auth()->user()->id,
+        'deadline'=> $request-> deadline,
     ]);
+
+    $courses = Course::all();
 
     $courses = Course::where('teacher_id', auth()->user()->id)->get();
  

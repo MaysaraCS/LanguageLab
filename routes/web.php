@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssessmentController;
 use Illuminate\Support\Facades\Route;
 use App\http\Controllers\AuthManager;
 use App\Http\Controllers\CourseController;
@@ -74,3 +75,5 @@ Route::post('/teacherCourses/{course}/content', [ ContentController::class, 'add
 Route::get('/download{file}', [ ContentController::class, 'download'])->name('content.download');
 
 Route::get('/studentCourses/{course}/content', [ ContentController::class, 'studentDisplay'])->name('student.content.display')->middleware('auth:student');
+
+Route::post('/courses/{course}/add-assessment', [AssessmentController::class, 'addAssessment'])->name('course.add.assessment')->middleware('auth.teacher');
