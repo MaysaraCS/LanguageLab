@@ -8,32 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Assessment extends Model
 {
     use HasFactory;
-
-    protected $table = "assessments";
-
-    protected $fillable = [
+    protected $fillable=[
         'course_id',
-        'teacher_id',
+        'type',
         'title',
-        'description',
-        'due_date',
-        'max_score',
+        'body',
+        'report',
     ];
 
-    public function course()
-    {
-        return $this->belongsTo(Course::class, 'course_id', 'id');
+    public function course(){
+        return $this->belongsTo(Course::class,'course_id');
     }
 
-    public function teacher()
-    {
-        return $this->belongsTo(Teacher::class, 'teacher_id', 'id');
+    public function submissions(){
+        return $this->hasMany(Submission::class,'assessment_id');
     }
-
-    public function submissions()
-    {
-        return $this->hasMany(Submission::class, 'assessment_id', 'id');
-    }
-
-    
 }

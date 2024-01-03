@@ -3,90 +3,100 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
-use App\Http\Requests\StoreAssessmentRequest;
-use App\Http\Requests\UpdateAssessmentRequest;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AssessmentController extends Controller
 {
-
-    public function index(Course $course)
+    public function index()
     {
-        $assessments = $course->assessments;
+        // Check if the user is a teacher
+        if (auth()->user()->type !== 'teacher') {
+            return redirect('/dashboard');
+        }
+
+        // Get all courses for the teacher and retrieve their IDs
+        $teacherCoursesIds = auth()->user()->teacherCourses->pluck('id')->toArray();
+
+        // Get assessments for the teacher's courses
+        $assessments = Assessment::whereIn('course_id', $teacherCoursesIds)->get();
+
+        // You can use the $assessments array as needed, for example, pass it to the view
         return view('assessments.index', compact('assessments'));
     }
 
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        // Pass necessary data for form population (e.g., course)
-        return view('assessments.create', compact('course')); // Replace 'course' with relevant model if needed
+        $courses = auth()->user()->teacherCourses;
+        return view('assessments.create', compact('courses'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreAssessmentRequest $request, Course $course)
+    public function store(Request $request)
     {
-        $this->validate($request, [
-            'title' => 'required',
-            'deadline' => 'required|date',
-            'description' => 'nullable',
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|string|in:quiz,question',
+            'course_id' => 'required',
+            'body' => 'required|string',
         ]);
 
-        $assessment = Assessment::create([
-            'title' => $request->title,
-            'deadline' => $request->deadline,
-            'description' => $request->description,
-            'course_id' => $course->id,
+        // Create a new Assessment instance using the fillable attributes
+        $assessment = new Assessment([
+            'course_id' => $request->input('course_id'),
+            'title' => $request->input('title'),
+            'type' => $request->input('type'),
+            'body' => $request->input('body'),
         ]);
+        $assessment->save();
 
-
-
-        return redirect()->route('assessments.index')->with('success', 'Assessment created successfully!');
+        return redirect()->route('assessments.index')->with('success', 'Assessment created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Assessment $assessment)
     {
-        return view('assessments.show', compact('assessment'));
+        $courses = auth()->user()->teacherCourses;
+
+        if (auth()->user()->type == 'teacher')
+            return view('assessments.show-teacher', compact('assessment', 'courses'));
+        else
+            return view('assessments.show-student', compact('assessment', 'courses'));
+
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Assessment $assessment)
+    public function update(Assessment $assessment, Request $request)
     {
-        return view('assessments.edit', compact('assessment'));
-    }
+        if (auth()->user()->type !== 'teacher')
+            return abort(403);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateAssessmentRequest $request, Assessment $assessment)
-    {
-        $this->validate($request, [
-            // Validation rules for updating
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|string|in:quiz,question',
+            'course_id' => 'required',
+            'body' => 'required|string',
+            'report' => 'file|mimes:pdf,doc,docx,jpeg,png,gif|max:5048', 
         ]);
 
-        $assessment->update($request->all());
+        $assessment->update([
+            'course_id' => $request->input('course_id'),
+            'title' => $request->input('title'),
+            'type' => $request->input('type'),
+            'body' => $request->input('body'),
+        ]);
 
-        return redirect()->route('assessments.index')->with('success', 'Assessment updated successfully!');
-    }
+        // Upload report if it exists
+        if ($request->hasFile('report')) {
+            $report = $request->file('report');
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Assessment $assessment)
-    {
-        $assessment->delete();
+            $extension = $report->extension();
+            $newName =  uniqid() . '.' . $extension;
+            $report->storeAs('public/reports/', $newName);
+            $assessment->report ='reports/'. $newName;
+            $assessment->save();
+        }
 
-        return redirect()->back()->with('success', 'Assessment deleted successfully!');
+
+        return redirect()->route('assessments.index')->with('success', 'Assessment updated successfully.');
+
     }
 }
-

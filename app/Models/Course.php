@@ -7,40 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Course extends Model
 {
-    public $timestamps = false;
-    
     use HasFactory;
+    protected array $guarded = [''];
+    // protected $guarded = [
+    //     'id', // Example: If 'id' should not be mass assignable
+    // ];
+//    public function students(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+//    {
+//        return $this->belongsToMany(User::class,'course_user', 'course_id', 'user_id');
+//    }
 
-    protected $table = "courses";
-
-    protected $fillable = [
-        'course_name',
-        'teacher_id',
-    ];
-
-    public function teacher()
+    public function students(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsTo(Teacher::class, 'teacher_id', 'id');
+        return $this->hasMany(CourseStudent::class, 'course_id', 'id');
     }
-
-    public function students()
-    {
-        return $this->belongsToMany(Student::class, 'enrollments', 'course_id', 'student_id');
-    }
-
-    public function enrollments()
-    {
-        return $this->hasMany(Enrollment::class, 'course_id', 'id');
-    }
-
     public function assessments()
     {
-        return $this->hasMany(Assessment::class, 'course_id', 'id');
+        return $this->hasMany(Assessment::class, 'course_id');
     }
-
-    public function announcements()
-    {
-        return $this->hasMany(Announcement::class, 'course_id', 'id');
-    }
-
 }

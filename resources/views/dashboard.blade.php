@@ -1,28 +1,17 @@
-<div>
-    <h1>
-        Dashboard
-    </h1>
-</div>
-<div>
-    
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
 
-@extends('layouts.app')
-@section('content')
-    <div class="container">
-        <h1>Dashboard</h1>
-        
-        <h2>Assessment Deadlines</h2>
-        
-        <ul>
-            @foreach($courses as $course)
-                <li>{{ $course->name }}:
-                    @foreach($course->assessments as $assessment)
-                        {{ $assessment->deadline->format('Y-m-d') }}<br>
-                    @endforeach
-                </li>
-            @endforeach
-        </ul>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    {{ __("You're logged in!") }}
+                </div>
+            </div>
+        </div>
     </div>
-@endsection
-
-</div>
+</x-app-layout>

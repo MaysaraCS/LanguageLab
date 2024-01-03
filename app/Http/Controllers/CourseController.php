@@ -2,83 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Models\Student;
-use App\Models\Enrollment;
-use App\Models\Teacher;
-use App\Models\Assessment;
-use App\Models\Submission;
-use App\Http\Requests\StoreCourseRequest;
-use App\Http\Requests\UpdateCourseRequest;
-use Illuminate\Support\Facades\Auth;
+use App\Models\CourseStudent;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\DB;
-
+use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
-   public function teacherCourses(){
-    $courses = Course::where('teacher_id', auth()->user()->id)->get();
-    return view('teacherCourses', compact('courses'));
-   }
-
-   public function teacherCoursesPost(){
-    return redirect(route('teacher.courses'));
-   }
-
-   public function createCourses(Request $request){
-    $request->validate([
-        'name' => 'required'
-    ]);
-
-    $newCourse = Course::create([
-        'course_name' => $request->input('name'),
-        'teacher_id' => auth()->user()->id,
-        'deadline'=> $request-> deadline,
-    ]);
-
-    $courses = Course::all();
-
-    $courses = Course::where('teacher_id', auth()->user()->id)->get();
- 
-    return view('teacherCourses', ['success' => 'Course created successfully', 'courses' => $courses]);
-    
-   }
-
-   public function displayParticipants(Course $course){
-    $participants = $course->enrollments()->with('student')->get();
-    return view('courseParticipants', compact('participants', 'course'));
-   }
-
-   public function addParticipant(Request $request, Course $course){ 
-    $request->validate([
-        'id' => 'required|exists:students,id',
-    ]);
-
-    $enrollment = Enrollment::where('student_id', $request->id)->where('course_id', $course->id)->first();
-
-    if ($enrollment) {
-        return redirect()->back()->with('error', 'Student is already enrolled in the course.');
-    }
-
-    try {
-        Enrollment::create([
-            'course_id' => $course->id,
-            'student_id' => $request->id,
-        ]);
-    } catch (\Exception $e) {
-        logger()->error('Error creating enrollment: ' . $e->getMessage());
-    }
-
-    return redirect()->back()->with('success', 'Student enrolled successfully.');
-    }  
-
-    public function displayStudentCourses()
+    public function index()
     {
-    $student = auth()->user(); 
-    $enrollments = Enrollment::where('student_id', $student->id)->with('course')->get();
-    $courses = $enrollments->pluck('course');
-    return view('studentCourses', compact('courses'));
+        if (auth()->user()->type == 'teacher')
+            $courses = auth()->user()->teacherCourses;
+        else {
+            $courses = auth()->user()->studentCourses()->with('course')->get();
+        }
+        return view('courses.index', compact('courses'));
     }
 
+    public function create()
+    {
+        $students = User::query()->where('type', 'student')->get();
+        return view('courses.create', compact('students'));
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            "name" => "required",
+            "user_id" => "required"
+        ]);
+        DB::transaction(function () use ($validatedData) {
+            $course = auth()->user()->teacherCourses()->create($validatedData);
+            foreach ($validatedData['user_id'] as $user) {
+                CourseStudent::create(['course_id' => $course->id, 'student_id' => $user]);
+            }
+        });
+        return redirect()->route('courses.index');
+    }
 }
