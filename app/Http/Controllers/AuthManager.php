@@ -64,7 +64,7 @@ class AuthManager extends Controller
 
     function registerStudent(Request $request){
         $request->validate([
-            'email' => 'required|email|unique:students',
+            'email' => 'required|email',
             'name' => 'required',
             'password' => 'required'
         ]);
@@ -82,7 +82,7 @@ class AuthManager extends Controller
 
     function registerTeacher(Request $request){
         $request->validate([
-            'email' => 'required|email|unique:teachers',
+            'email' => 'required|email',
             'name' => 'required',
             'password' => 'required'
         ]);
